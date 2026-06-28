@@ -16,6 +16,8 @@ export const NAV: readonly NavItem[] = [
   { key: "propostas", href: "/propostas", label: "Propostas" },
   { key: "empresas", href: "/empresas", label: "Empresas" },
   { key: "cobranca", href: "/cobranca", label: "Cobrança" },
+  { key: "chamados", href: "/chamados", label: "Chamados" },
+  { key: "alertas", href: "/alertas", label: "Alertas" },
   { key: "buscar", href: "/buscar", label: "Buscar" },
 ];
 

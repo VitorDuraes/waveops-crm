@@ -10,15 +10,18 @@ import type {
   MotivoPerda,
   Origem,
   Plano,
+  PrioridadeChamado,
   Role,
   Segmento,
   Stage,
   StatusAssinatura,
+  StatusChamado,
   StatusCliente,
   StatusFatura,
   StatusFollowup,
   StatusProposta,
   TaskStatus,
+  TipoAlerta,
   TipoFollowup,
 } from "@/lib/validators";
 
@@ -160,4 +163,25 @@ export const STATUS_FOLLOWUP_LABELS: Record<StatusFollowup, string> = {
   agendado: "Agendado",
   enviado: "Enviado",
   falhou: "Falhou",
+};
+
+// ===================== Fase 4 (suporte e alertas) =====================
+
+export const PRIORIDADE_CHAMADO_LABELS: Record<PrioridadeChamado, string> = {
+  baixa: "Baixa",
+  media: "Média",
+  alta: "Alta",
+};
+
+export const STATUS_CHAMADO_LABELS: Record<StatusChamado, string> = {
+  aberto: "Aberto",
+  em_andamento: "Em andamento",
+  resolvido: "Resolvido",
+  fechado: "Fechado",
+};
+
+export const TIPO_ALERTA_LABELS: Record<TipoAlerta, string> = {
+  fatura_atrasada: "Fatura atrasada",
+  assinatura_vencida: "Assinatura vencida",
+  lead_parado: "Lead parado no funil",
 };

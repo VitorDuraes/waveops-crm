@@ -156,6 +156,24 @@ export type CanalFollowup = (typeof CANAL_FOLLOWUP)[number];
 export const STATUS_FOLLOWUP = ["agendado", "enviado", "falhou"] as const;
 export type StatusFollowup = (typeof STATUS_FOLLOWUP)[number];
 
+// ===================== Fase 4 (suporte e alertas) =====================
+
+// ---------- Prioridade do chamado (chamados.prioridade) ----------
+export const PRIORIDADE_CHAMADO = ["baixa", "media", "alta"] as const;
+export type PrioridadeChamado = (typeof PRIORIDADE_CHAMADO)[number];
+
+// ---------- Status do chamado (chamados.status) ----------
+export const STATUS_CHAMADO = ["aberto", "em_andamento", "resolvido", "fechado"] as const;
+export type StatusChamado = (typeof STATUS_CHAMADO)[number];
+
+// ---------- Tipos de alerta de risco (sinais antecipados de churn) ----------
+export const TIPO_ALERTA = [
+  "fatura_atrasada",
+  "assinatura_vencida",
+  "lead_parado",
+] as const;
+export type TipoAlerta = (typeof TIPO_ALERTA)[number];
+
 /**
  * Normaliza um telefone brasileiro para o formato so-digitos com DDI 55.
  * - Remove tudo que nao for digito.

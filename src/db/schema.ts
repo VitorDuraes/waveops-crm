@@ -28,10 +28,12 @@ import {
   MOTIVO_PERDA,
   ORIGEM,
   PLANO,
+  PRIORIDADE_CHAMADO,
   ROLES,
   SEGMENTO,
   STAGE,
   STATUS_ASSINATURA,
+  STATUS_CHAMADO,
   STATUS_CLIENTE,
   STATUS_FATURA,
   STATUS_FOLLOWUP,
@@ -392,4 +394,50 @@ export const followups = pgTable(
     check("followups_canal_check", sql`${t.canal} in ${inList(CANAL_FOLLOWUP)}`),
     check("followups_status_check", sql`${t.status} in ${inList(STATUS_FOLLOWUP)}`),
   ],
+);
+
+// ===================== Fase 4 (suporte e alertas) =====================
+
+// ---------- chamados (suporte; abertos pelo cliente no Portal ou pelo time) ----------
+export const chamados = pgTable(
+  "chamados",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    titulo: text("titulo").notNull(),
+    descricao: text("descricao"),
+    prioridade: text("prioridade").notNull().default("media"),
+    status: text("status").notNull().default("aberto"),
+    trelloCardId: text("trello_card_id"),
+    empresaId: uuid("empresa_id")
+      .notNull()
+      .references(() => empresas.id, { onDelete: "cascade" }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    index("chamados_status_idx").on(t.status),
+    index("chamados_empresa_idx").on(t.empresaId),
+    check("chamados_prioridade_check", sql`${t.prioridade} in ${inList(PRIORIDADE_CHAMADO)}`),
+    check("chamados_status_check", sql`${t.status} in ${inList(STATUS_CHAMADO)}`),
+  ],
+);
+
+// ---------- briefings (1 por empresa; onboarding/escopo do cliente) ----------
+export const briefings = pgTable(
+  "briefings",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    objetivo: text("objetivo"),
+    ferramentaAtual: text("ferramenta_atual"),
+    dor: text("dor"),
+    volume: text("volume"),
+    trelloCardId: text("trello_card_id"),
+    // Regra de negocio: 1 briefing por empresa (upsert por empresa_id).
+    empresaId: uuid("empresa_id")
+      .notNull()
+      .references(() => empresas.id, { onDelete: "cascade" }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [uniqueIndex("briefings_empresa_unique").on(t.empresaId)],
 );

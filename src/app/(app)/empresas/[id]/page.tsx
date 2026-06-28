@@ -9,25 +9,38 @@ import { formatBRLFromCents, formatPhoneBR } from "@/lib/crm/format";
 import { safeExternalUrl } from "@/lib/crm/url";
 import {
   ORIGEM_LABELS,
+  PRIORIDADE_CHAMADO_LABELS,
   SEGMENTO_LABELS,
   STAGE_LABELS,
+  STATUS_CHAMADO_LABELS,
   STATUS_PROPOSTA_LABELS,
 } from "@/lib/crm/labels";
 import { StatusClienteBadge } from "@/components/ui/badge";
 import { PessoaCreateForm } from "@/components/empresas/pessoa-create-form";
+import { BriefingForm } from "@/components/empresas/briefing-form";
 import { NoteForm } from "@/components/atividades/note-form";
 import { NotesList } from "@/components/atividades/notes-list";
 import { TaskForm } from "@/components/atividades/task-form";
 import { TaskList } from "@/components/atividades/task-list";
 import { Timeline } from "@/components/atividades/timeline";
 import { getActorNames, listAuditByTarget } from "@/server/audit";
+import { getBriefingByEmpresa } from "@/server/briefings";
+import { listChamadosByEmpresa } from "@/server/chamados";
 import { getEmpresaById } from "@/server/empresas";
 import { listNotesByTarget } from "@/server/notes";
 import { listOportunidadesByEmpresa } from "@/server/oportunidades";
 import { listPessoasByEmpresa } from "@/server/pessoas";
 import { listPropostasByEmpresa } from "@/server/propostas";
 import { listTasksByTarget } from "@/server/tasks";
-import type { Origem, Segmento, Stage, StatusCliente, StatusProposta } from "@/lib/validators";
+import type {
+  Origem,
+  PrioridadeChamado,
+  Segmento,
+  Stage,
+  StatusChamado,
+  StatusCliente,
+  StatusProposta,
+} from "@/lib/validators";
 
 export const dynamic = "force-dynamic";
 
@@ -42,14 +55,17 @@ export default async function EmpresaRecordPage({
   const empresa = await getEmpresaById(db, id);
   if (!empresa) notFound();
 
-  const [pessoas, oportunidades, propostas, notes, tasks, audit] = await Promise.all([
-    listPessoasByEmpresa(db, id),
-    listOportunidadesByEmpresa(db, id),
-    listPropostasByEmpresa(db, id),
-    listNotesByTarget(db, "empresa", id),
-    listTasksByTarget(db, "empresa", id),
-    listAuditByTarget(db, "empresa", id),
-  ]);
+  const [pessoas, oportunidades, propostas, chamados, briefing, notes, tasks, audit] =
+    await Promise.all([
+      listPessoasByEmpresa(db, id),
+      listOportunidadesByEmpresa(db, id),
+      listPropostasByEmpresa(db, id),
+      listChamadosByEmpresa(db, id),
+      getBriefingByEmpresa(db, id),
+      listNotesByTarget(db, "empresa", id),
+      listTasksByTarget(db, "empresa", id),
+      listAuditByTarget(db, "empresa", id),
+    ]);
 
   const actorNames = await getActorNames(
     db,
@@ -190,6 +206,53 @@ export default async function EmpresaRecordPage({
             <TaskList tasks={tasks} targetType="empresa" targetId={id} />
           </div>
         </div>
+      </Section>
+
+      {/* Suporte */}
+      <Section title="Suporte" count={chamados.length}>
+        {chamados.length === 0 ? (
+          <EmptyHint>Nenhum chamado desta empresa.</EmptyHint>
+        ) : (
+          <ul className="divide-y divide-neutral-100 rounded-xl border border-neutral-200 bg-white">
+            {chamados.map((c) => (
+              <li key={c.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                <div className="flex flex-col gap-0.5">
+                  <span className="font-medium text-neutral-900">{c.titulo}</span>
+                  <span className="text-sm text-neutral-500">
+                    {PRIORIDADE_CHAMADO_LABELS[c.prioridade as PrioridadeChamado] ?? c.prioridade}
+                  </span>
+                </div>
+                <span className="inline-flex flex-none items-center rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs font-medium text-neutral-700">
+                  {STATUS_CHAMADO_LABELS[c.status as StatusChamado] ?? c.status}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className="mt-2 text-xs text-neutral-500">
+          Abra e gerencie chamados em{" "}
+          <Link href="/chamados" className="text-[var(--color-brand)] hover:underline">
+            Chamados
+          </Link>
+          .
+        </p>
+      </Section>
+
+      {/* Briefing */}
+      <Section title="Briefing">
+        <BriefingForm
+          empresaId={id}
+          briefing={
+            briefing
+              ? {
+                  objetivo: briefing.objetivo,
+                  ferramentaAtual: briefing.ferramentaAtual,
+                  dor: briefing.dor,
+                  volume: briefing.volume,
+                }
+              : null
+          }
+        />
       </Section>
 
       {/* Historico */}
