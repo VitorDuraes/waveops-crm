@@ -13,8 +13,8 @@ export function parseBRLToCents(value: string | null | undefined): number | null
   if (value == null) return null;
   const trimmed = value.trim();
   if (!trimmed) return null;
-  // Remove tudo que nao for digito, virgula, ponto ou sinal.
-  const cleaned = trimmed.replace(/[^\d.,-]/g, "");
+  // Remove tudo que nao for digito, virgula ou ponto. Dinheiro nao e negativo: descarta o sinal.
+  const cleaned = trimmed.replace(/[^\d.,]/g, "");
   if (!cleaned) return null;
   // Normaliza para ponto decimal: se tem virgula, ela e o decimal (padrao BR).
   const normalized = cleaned.includes(",")

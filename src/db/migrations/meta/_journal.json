@@ -15,6 +15,20 @@
       "when": 1782663432876,
       "tag": "0001_wet_wasp",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782666602786,
+      "tag": "0002_clammy_payback",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1782668100978,
+      "tag": "0003_cooing_brother_voodoo",
+      "breakpoints": true
     }
   ]
 }

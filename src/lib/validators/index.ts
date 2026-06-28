@@ -108,6 +108,54 @@ export const TARGET_TYPE = [
 ] as const;
 export type TargetType = (typeof TARGET_TYPE)[number];
 
+// ===================== Fase 3 (pos-venda, cobranca, receita) =====================
+
+// ---------- Ciclo de cobranca do plano (planos.ciclo) ----------
+export const CICLO = ["mensal", "anual"] as const;
+export type Ciclo = (typeof CICLO)[number];
+
+// ---------- Status da assinatura (assinaturas.status) ----------
+// So "ativo" entra no MRR. Pausado/cancelado/vencido ficam de fora do recorrente.
+export const STATUS_ASSINATURA = [
+  "ativo",
+  "pendente",
+  "vencido",
+  "pausado",
+  "cancelado",
+] as const;
+export type StatusAssinatura = (typeof STATUS_ASSINATURA)[number];
+
+// ---------- Status da fatura (faturas.status) ----------
+export const STATUS_FATURA = [
+  "criada",
+  "em_aberto",
+  "paga",
+  "vencida",
+  "cancelada",
+  "estornada",
+  "reembolsada",
+] as const;
+export type StatusFatura = (typeof STATUS_FATURA)[number];
+
+// ---------- Regua de cobranca: tipo do follow-up (followups.tipo) ----------
+export const TIPO_FOLLOWUP = [
+  "7d_antes",
+  "3d_antes",
+  "no_vencimento",
+  "vencido_1",
+  "vencido_3",
+  "vencido_7",
+] as const;
+export type TipoFollowup = (typeof TIPO_FOLLOWUP)[number];
+
+// ---------- Canal do follow-up (followups.canal) ----------
+export const CANAL_FOLLOWUP = ["whatsapp", "email", "discord"] as const;
+export type CanalFollowup = (typeof CANAL_FOLLOWUP)[number];
+
+// ---------- Status do follow-up (followups.status) ----------
+export const STATUS_FOLLOWUP = ["agendado", "enviado", "falhou"] as const;
+export type StatusFollowup = (typeof STATUS_FOLLOWUP)[number];
+
 /**
  * Normaliza um telefone brasileiro para o formato so-digitos com DDI 55.
  * - Remove tudo que nao for digito.

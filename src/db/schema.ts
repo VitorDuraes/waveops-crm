@@ -21,6 +21,8 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import {
+  CANAL_FOLLOWUP,
+  CICLO,
   FIT,
   FORMA_PAGAMENTO,
   MOTIVO_PERDA,
@@ -29,10 +31,14 @@ import {
   ROLES,
   SEGMENTO,
   STAGE,
+  STATUS_ASSINATURA,
   STATUS_CLIENTE,
+  STATUS_FATURA,
+  STATUS_FOLLOWUP,
   STATUS_PROPOSTA,
   TARGET_TYPE,
   TASK_STATUS,
+  TIPO_FOLLOWUP,
 } from "@/lib/validators";
 
 const createdAt = () =>
@@ -275,4 +281,115 @@ export const auditLog = pgTable(
     at: timestamp("at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (t) => [index("audit_log_entidade_idx").on(t.entidade, t.entidadeId, t.at)],
+);
+
+// ===================== Fase 3 (pos-venda, cobranca, receita) =====================
+
+// ---------- planos (catalogo de planos WaveOps; 4 seedados) ----------
+export const planos = pgTable(
+  "planos",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    descricao: text("descricao"),
+    precoMensalCents: integer("preco_mensal_cents").notNull(),
+    ciclo: text("ciclo").notNull().default("mensal"),
+    // null = ilimitado.
+    maxAutomacoes: integer("max_automacoes"),
+    nivelDeSuporte: text("nivel_de_suporte"),
+    ativo: boolean("ativo").notNull().default(true),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [check("planos_ciclo_check", sql`${t.ciclo} in ${inList(CICLO)}`)],
+);
+
+// ---------- assinaturas (vinculo Empresa<->Plano; fonte primaria do MRR) ----------
+export const assinaturas = pgTable(
+  "assinaturas",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name"),
+    status: text("status").notNull().default("pendente"),
+    // Snapshot do valor mensal no momento da assinatura (em centavos). MRR = soma das ativas.
+    valorMensalCents: integer("valor_mensal_cents").notNull(),
+    dataInicio: timestamp("data_inicio", { withTimezone: true, mode: "date" }),
+    proximoVencimento: timestamp("proximo_vencimento", { withTimezone: true, mode: "date" }),
+    canceladaEm: timestamp("cancelada_em", { withTimezone: true, mode: "date" }),
+    pausadaEm: timestamp("pausada_em", { withTimezone: true, mode: "date" }),
+    gatewaySubscriptionId: text("gateway_subscription_id"),
+    empresaId: uuid("empresa_id")
+      .notNull()
+      .references(() => empresas.id, { onDelete: "cascade" }),
+    // Plano apagado nao mata a assinatura (snapshot de valor ja preservado).
+    planoId: uuid("plano_id").references(() => planos.id, { onDelete: "set null" }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    index("assinaturas_status_idx").on(t.status),
+    index("assinaturas_empresa_idx").on(t.empresaId),
+    check("assinaturas_status_check", sql`${t.status} in ${inList(STATUS_ASSINATURA)}`),
+    check("assinaturas_valor_check", sql`${t.valorMensalCents} > 0`),
+  ],
+);
+
+// ---------- faturas (cobranca de uma assinatura/empresa) ----------
+export const faturas = pgTable(
+  "faturas",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name"),
+    valorCents: integer("valor_cents").notNull(),
+    vencimento: timestamp("vencimento", { withTimezone: true, mode: "date" }),
+    pagoEm: timestamp("pago_em", { withTimezone: true, mode: "date" }),
+    status: text("status").notNull().default("em_aberto"),
+    formaPagamento: text("forma_pagamento"),
+    linkDePagamento: text("link_de_pagamento"),
+    gatewayPaymentId: text("gateway_payment_id"),
+    empresaId: uuid("empresa_id")
+      .notNull()
+      .references(() => empresas.id, { onDelete: "cascade" }),
+    assinaturaId: uuid("assinatura_id").references(() => assinaturas.id, { onDelete: "set null" }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    index("faturas_status_vencimento_idx").on(t.status, t.vencimento),
+    index("faturas_empresa_idx").on(t.empresaId),
+    check("faturas_status_check", sql`${t.status} in ${inList(STATUS_FATURA)}`),
+    check("faturas_valor_check", sql`${t.valorCents} > 0`),
+    check(
+      "faturas_forma_pagamento_check",
+      sql`${t.formaPagamento} is null or ${t.formaPagamento} in ${inList(FORMA_PAGAMENTO)}`,
+    ),
+  ],
+);
+
+// ---------- followups (regua de cobranca por fatura) ----------
+export const followups = pgTable(
+  "followups",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name"),
+    tipo: text("tipo").notNull(),
+    canal: text("canal").notNull().default("whatsapp"),
+    mensagem: text("mensagem"),
+    status: text("status").notNull().default("agendado"),
+    agendadoPara: timestamp("agendado_para", { withTimezone: true, mode: "date" }),
+    enviadoEm: timestamp("enviado_em", { withTimezone: true, mode: "date" }),
+    erro: text("erro"),
+    empresaId: uuid("empresa_id")
+      .notNull()
+      .references(() => empresas.id, { onDelete: "cascade" }),
+    faturaId: uuid("fatura_id").references(() => faturas.id, { onDelete: "cascade" }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    index("followups_status_idx").on(t.status),
+    check("followups_tipo_check", sql`${t.tipo} in ${inList(TIPO_FOLLOWUP)}`),
+    check("followups_canal_check", sql`${t.canal} in ${inList(CANAL_FOLLOWUP)}`),
+    check("followups_status_check", sql`${t.status} in ${inList(STATUS_FOLLOWUP)}`),
+  ],
 );

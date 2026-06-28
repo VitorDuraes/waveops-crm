@@ -87,6 +87,7 @@ DependsOn: Fase 3 e Fase 1. Bloqueado por chip dedicado + pareamento (decisao do
 - WhatsApp nao oficial: numero dedicado, baixo volume, reativo, isolavel, fase later.
 - CVE de logic functions: nao portar serverless; automacao no n8n.
 - LGPD: PII real, base legal, opt-out, supressao, caminho de exclusao; preview antes de gravar; nao logar PII crua.
+- Retencao do audit_log: e append-only e guarda snapshot financeiro (valorCents, status) em jsonb, sem FK para empresa, entao sobrevive ao cascade. INDEFINIDO: definir politica de retencao e caminho de expurgo/anonimizacao por entidade quando a empresa for excluida. Nao bloqueia a Fase 3; resolver no spec de privacidade da Fase 4 (junto com mascarar CPF e base legal do contato).
 - Time pequeno: cada fase entrega valor sozinha; nao empilhar should/later no MVP.
 
 ## Criterios de aceite (por fase)

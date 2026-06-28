@@ -1,0 +1,2 @@
+ALTER TABLE "assinaturas" ADD CONSTRAINT "assinaturas_valor_check" CHECK ("assinaturas"."valor_mensal_cents" > 0);--> statement-breakpoint
+ALTER TABLE "faturas" ADD CONSTRAINT "faturas_valor_check" CHECK ("faturas"."valor_cents" > 0);

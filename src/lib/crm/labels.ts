@@ -3,6 +3,8 @@
 // Os valores (chaves) espelham os arrays de src/lib/validators e os CHECK do schema.
 // Use estes mapas em qualquer tela ou relatorio que o usuario le (nunca exibir o value cru).
 import type {
+  CanalFollowup,
+  Ciclo,
   Fit,
   FormaPagamento,
   MotivoPerda,
@@ -11,9 +13,13 @@ import type {
   Role,
   Segmento,
   Stage,
+  StatusAssinatura,
   StatusCliente,
+  StatusFatura,
+  StatusFollowup,
   StatusProposta,
   TaskStatus,
+  TipoFollowup,
 } from "@/lib/validators";
 
 export const ROLE_LABELS: Record<Role, string> = {
@@ -108,4 +114,50 @@ export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
   em_andamento: "Em Andamento",
   concluida: "Concluída",
   cancelada: "Cancelada",
+};
+
+// ===================== Fase 3 (pos-venda, cobranca, receita) =====================
+
+export const CICLO_LABELS: Record<Ciclo, string> = {
+  mensal: "Mensal",
+  anual: "Anual",
+};
+
+export const STATUS_ASSINATURA_LABELS: Record<StatusAssinatura, string> = {
+  ativo: "Ativa",
+  pendente: "Pendente",
+  vencido: "Vencida",
+  pausado: "Pausada",
+  cancelado: "Cancelada",
+};
+
+export const STATUS_FATURA_LABELS: Record<StatusFatura, string> = {
+  criada: "Criada",
+  em_aberto: "Em aberto",
+  paga: "Paga",
+  vencida: "Vencida",
+  cancelada: "Cancelada",
+  estornada: "Estornada",
+  reembolsada: "Reembolsada",
+};
+
+export const TIPO_FOLLOWUP_LABELS: Record<TipoFollowup, string> = {
+  "7d_antes": "7 dias antes",
+  "3d_antes": "3 dias antes",
+  no_vencimento: "No vencimento",
+  vencido_1: "Vencida +1 dia",
+  vencido_3: "Vencida +3 dias",
+  vencido_7: "Vencida +7 dias",
+};
+
+export const CANAL_FOLLOWUP_LABELS: Record<CanalFollowup, string> = {
+  whatsapp: "WhatsApp",
+  email: "E-mail",
+  discord: "Discord",
+};
+
+export const STATUS_FOLLOWUP_LABELS: Record<StatusFollowup, string> = {
+  agendado: "Agendado",
+  enviado: "Enviado",
+  falhou: "Falhou",
 };

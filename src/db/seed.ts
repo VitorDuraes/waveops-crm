@@ -38,6 +38,18 @@ async function main() {
       .values({ name: "Admin", email, passwordHash, role: "admin", active: true })
       .onConflictDoNothing({ target: schema.users.email });
     console.log(`Seed concluido. Admin garantido: ${email}`);
+
+    // Planos WaveOps (idempotente: so insere se a tabela estiver vazia).
+    const planosExistentes = await db.select({ id: schema.planos.id }).from(schema.planos).limit(1);
+    if (planosExistentes.length === 0) {
+      await db.insert(schema.planos).values([
+        { name: "Operacao", descricao: "Automacao essencial para comecar.", precoMensalCents: 39700, ciclo: "mensal", nivelDeSuporte: "E-mail", ativo: true },
+        { name: "Essencial", descricao: "Operacao com integracoes e dashboards.", precoMensalCents: 49700, ciclo: "mensal", nivelDeSuporte: "E-mail e WhatsApp", ativo: true },
+        { name: "Pro", descricao: "Automacao avancada e agentes supervisionados.", precoMensalCents: 99700, ciclo: "mensal", nivelDeSuporte: "Prioritario", ativo: true },
+        { name: "Empresarial", descricao: "Operacao sob medida com SLA dedicado.", precoMensalCents: 199700, ciclo: "mensal", nivelDeSuporte: "Dedicado", ativo: true },
+      ]);
+      console.log("Seed: 4 planos criados.");
+    }
   } finally {
     await sqlClient.end({ timeout: 5 });
   }
