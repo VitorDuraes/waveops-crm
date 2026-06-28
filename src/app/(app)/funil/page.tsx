@@ -30,8 +30,8 @@ export default async function FunilPage() {
   const empresaOptions: EmpresaOption[] = empresas.map((e) => ({ id: e.id, name: e.name }));
 
   return (
-    <div className="flex w-full flex-col gap-6">
-      <header className="flex flex-col gap-4 border-b border-neutral-200 pb-6 sm:flex-row sm:items-start sm:justify-between">
+    <div className="flex h-full w-full flex-col gap-6">
+      <header className="flex flex-none flex-col gap-4 border-b border-neutral-200 pb-6 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-neutral-900">Funil de vendas</h2>
           <p className="mt-1 text-sm text-neutral-500">
