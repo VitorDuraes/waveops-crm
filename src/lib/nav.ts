@@ -12,7 +12,9 @@ export type NavItem = {
 
 export const NAV: readonly NavItem[] = [
   { key: "funil", href: "/funil", label: "Funil" },
+  { key: "propostas", href: "/propostas", label: "Propostas" },
   { key: "empresas", href: "/empresas", label: "Empresas" },
+  { key: "buscar", href: "/buscar", label: "Buscar" },
 ];
 
 export function navForRole(role: Role): NavItem[] {

@@ -1,6 +1,6 @@
 // src/server/oportunidades.ts — repositorio de oportunidades (funil). db injetado por DbOrTx.
 // Stage default = novo_lead. updateStage move no Kanban. Validacao + retorno discriminado.
-import { asc, eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { empresas, oportunidades } from "@/db/schema";
 import { DEFAULT_STAGE, isStage } from "@/lib/crm/stage";
 import { type Stage } from "@/lib/validators";
@@ -158,6 +158,18 @@ export async function listOportunidadesComEmpresa(db: DbOrTx): Promise<Oportunid
     .orderBy(asc(oportunidades.createdAt));
 
   return rows.map((r) => ({ ...r.oportunidade, empresaName: r.empresaName }));
+}
+
+// Oportunidades de uma empresa (para a record page da Empresa). Mais recente primeiro.
+export async function listOportunidadesByEmpresa(
+  db: DbOrTx,
+  empresaId: string,
+): Promise<Oportunidade[]> {
+  return db
+    .select()
+    .from(oportunidades)
+    .where(eq(oportunidades.empresaId, empresaId))
+    .orderBy(desc(oportunidades.createdAt));
 }
 
 // Tipo so para a tela: oportunidades ja agrupadas por stage.

@@ -1,5 +1,5 @@
 "use client";
-// src/components/empresas/empresa-create-form.tsx — form de nova empresa.
+// src/components/empresas/empresa-create-form.tsx - form de nova empresa.
 // Padrao do Prospect: useTransition + chamada direta da action (sem useActionState/efeito),
 // para fechar o form e dar router.refresh no proprio handler. A action valida sessao e input.
 import { useRef, useState, useTransition } from "react";
@@ -68,7 +68,7 @@ export function EmpresaCreateForm() {
               </Field>
               <Field label="Segmento">
                 <select name="segmento" defaultValue="" className={inputCls}>
-                  <option value="">—</option>
+                  <option value="">-</option>
                   {SEGMENTO.map((s) => (
                     <option key={s} value={s}>
                       {SEGMENTO_LABELS[s]}
@@ -78,7 +78,7 @@ export function EmpresaCreateForm() {
               </Field>
               <Field label="Origem">
                 <select name="origemDoLead" defaultValue="" className={inputCls}>
-                  <option value="">—</option>
+                  <option value="">-</option>
                   {ORIGEM.map((o) => (
                     <option key={o} value={o}>
                       {ORIGEM_LABELS[o]}

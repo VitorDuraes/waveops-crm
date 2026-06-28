@@ -1,9 +1,11 @@
 // src/app/(app)/empresas/page.tsx — lista de empresas (Server Component). Consulta o banco
 // em runtime (force-dynamic), por isso o `next build` nao precisa de banco.
+import Link from "next/link";
 import { db } from "@/db";
 import { requireUser } from "@/lib/auth";
 import { SEGMENTO_LABELS } from "@/lib/crm/labels";
 import { formatPhoneBR } from "@/lib/crm/format";
+import { safeExternalUrl } from "@/lib/crm/url";
 import { SegmentoBadge, StatusClienteBadge } from "@/components/ui/badge";
 import { EmpresaCreateForm } from "@/components/empresas/empresa-create-form";
 import { listEmpresas } from "@/server/empresas";
@@ -46,7 +48,14 @@ export default async function EmpresasPage() {
             <tbody className="divide-y divide-neutral-100">
               {empresas.map((empresa) => (
                 <tr key={empresa.id} className="hover:bg-neutral-50">
-                  <td className="px-4 py-3 font-medium text-neutral-900">{empresa.name}</td>
+                  <td className="px-4 py-3 font-medium">
+                    <Link
+                      href={`/empresas/${empresa.id}`}
+                      className="text-neutral-900 hover:text-[var(--color-brand)] hover:underline"
+                    >
+                      {empresa.name}
+                    </Link>
+                  </td>
                   <td className="px-4 py-3">
                     <StatusClienteBadge status={empresa.statusDoCliente as StatusCliente} />
                   </td>
@@ -63,18 +72,21 @@ export default async function EmpresasPage() {
                     {formatPhoneBR(empresa.telefoneNormalized)}
                   </td>
                   <td className="px-4 py-3 text-neutral-600">
-                    {empresa.website ? (
-                      <a
-                        href={empresa.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[var(--color-brand)] hover:underline"
-                      >
-                        {empresa.website.replace(/^https?:\/\//, "")}
-                      </a>
-                    ) : (
-                      "—"
-                    )}
+                    {(() => {
+                      const site = safeExternalUrl(empresa.website);
+                      return site ? (
+                        <a
+                          href={site}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[var(--color-brand)] hover:underline"
+                        >
+                          {site.replace(/^https?:\/\//, "")}
+                        </a>
+                      ) : (
+                        "-"
+                      );
+                    })()}
                   </td>
                 </tr>
               ))}

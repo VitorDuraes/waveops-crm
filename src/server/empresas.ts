@@ -13,6 +13,7 @@ import {
   type Segmento,
   type StatusCliente,
 } from "@/lib/validators";
+import { safeExternalUrl } from "@/lib/crm/url";
 import type { DbOrTx } from "./types";
 
 export type Empresa = typeof empresas.$inferSelect;
@@ -60,7 +61,8 @@ export async function createEmpresa(
   const documentoDisplay = input.documento?.trim() || null;
   const telefoneRaw = input.telefone?.trim() || null;
   const telefoneNormalized = telefoneRaw ? normalizePhone(telefoneRaw) : null;
-  const website = input.website?.trim() || null;
+  // Sanitiza: so http/https. Bloqueia javascript:/data: (XSS armazenado no href da tela).
+  const website = safeExternalUrl(input.website);
 
   let segmento: Segmento | null = null;
   const segmentoRaw = input.segmento?.trim();
@@ -161,7 +163,7 @@ export async function updateEmpresa(
     const name = patch.name.trim();
     if (name) updates.name = name;
   }
-  if (patch.website !== undefined) updates.website = patch.website?.trim() || null;
+  if (patch.website !== undefined) updates.website = safeExternalUrl(patch.website);
 
   if (patch.segmento !== undefined) {
     const s = patch.segmento?.trim() || null;

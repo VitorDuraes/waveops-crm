@@ -8,6 +8,13 @@
       "when": 1782606475775,
       "tag": "0000_cool_gunslinger",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1782663432876,
+      "tag": "0001_wet_wasp",
+      "breakpoints": true
     }
   ]
 }

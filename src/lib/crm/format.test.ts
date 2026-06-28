@@ -26,8 +26,8 @@ describe("formatBRLFromCents", () => {
     expect(formatBRLFromCents(0)).toBe("R$ 0,00");
   });
   it("traco para null/undefined", () => {
-    expect(formatBRLFromCents(null)).toBe("—");
-    expect(formatBRLFromCents(undefined)).toBe("—");
+    expect(formatBRLFromCents(null)).toBe("-");
+    expect(formatBRLFromCents(undefined)).toBe("-");
   });
 });
 
@@ -40,7 +40,7 @@ describe("formatPhoneBR", () => {
   });
   it("mantem cru se nao bate o formato, traco se vazio", () => {
     expect(formatPhoneBR("123")).toBe("123");
-    expect(formatPhoneBR(null)).toBe("—");
+    expect(formatPhoneBR(null)).toBe("-");
   });
 });
 
@@ -50,6 +50,6 @@ describe("formatPercent", () => {
     expect(formatPercent(0)).toBe("0%");
   });
   it("traco para null", () => {
-    expect(formatPercent(null)).toBe("—");
+    expect(formatPercent(null)).toBe("-");
   });
 });

@@ -72,6 +72,42 @@ export const MOTIVO_PERDA = [
 ] as const;
 export type MotivoPerda = (typeof MOTIVO_PERDA)[number];
 
+// ========================= Fase 2 (pre-venda + atividades) =========================
+
+// ---------- Planos WaveOps (proposta.plano, oportunidades.plano_pretendido) ----------
+// Os 4 planos reais ja seedados (Operacao 397, Essencial 497, Pro 997, Empresarial 1997).
+export const PLANO = ["operacao", "essencial", "pro", "empresarial"] as const;
+export type Plano = (typeof PLANO)[number];
+
+// ---------- Fit do diagnostico (diagnosticos.fit) ----------
+export const FIT = ["alto", "medio", "baixo"] as const;
+export type Fit = (typeof FIT)[number];
+
+// ---------- Status da proposta (propostas.status) ----------
+export const STATUS_PROPOSTA = [
+  "rascunho",
+  "enviada",
+  "aceita",
+  "recusada",
+  "expirada",
+] as const;
+export type StatusProposta = (typeof STATUS_PROPOSTA)[number];
+
+// ---------- Status da task (tasks.status) ----------
+export const TASK_STATUS = ["aberta", "em_andamento", "concluida", "cancelada"] as const;
+export type TaskStatus = (typeof TASK_STATUS)[number];
+
+// ---------- Tipo do alvo de Note/Task (vinculo polimorfico simples) ----------
+// Note/Task apontam para qualquer registro via (targetType, targetId). Sem traversal generico.
+export const TARGET_TYPE = [
+  "empresa",
+  "pessoa",
+  "oportunidade",
+  "proposta",
+  "diagnostico",
+] as const;
+export type TargetType = (typeof TARGET_TYPE)[number];
+
 /**
  * Normaliza um telefone brasileiro para o formato so-digitos com DDI 55.
  * - Remove tudo que nao for digito.

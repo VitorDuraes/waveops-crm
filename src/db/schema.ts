@@ -8,15 +8,31 @@
 //    DEVEM ser identicos aos CHECK abaixo (usamos os mesmos arrays para montar o SQL).
 //  - Colunas snake_case; uuid pk defaultRandom; helpers createdAt/updatedAt com timezone.
 import { sql } from "drizzle-orm";
-import { boolean, check, index, integer, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import {
+  boolean,
+  check,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core";
+import {
+  FIT,
   FORMA_PAGAMENTO,
   MOTIVO_PERDA,
   ORIGEM,
+  PLANO,
   ROLES,
   SEGMENTO,
   STAGE,
   STATUS_CLIENTE,
+  STATUS_PROPOSTA,
+  TARGET_TYPE,
+  TASK_STATUS,
 } from "@/lib/validators";
 
 const createdAt = () =>
@@ -141,4 +157,122 @@ export const oportunidades = pgTable(
       sql`${t.probabilidade} is null or (${t.probabilidade} >= 0 and ${t.probabilidade} <= 100)`,
     ),
   ],
+);
+
+// ========================= Fase 2 (pre-venda + atividades) =========================
+
+// ---------- diagnosticos (qualificacao do deal; fit Alto/Medio/Baixo) ----------
+export const diagnosticos = pgTable(
+  "diagnosticos",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    dor: text("dor"),
+    processoAtual: text("processo_atual"),
+    ferramentas: text("ferramentas"),
+    volume: text("volume"),
+    fit: text("fit"),
+    // Pertence a uma oportunidade (e, por consequencia, a uma empresa). Cascade junto.
+    oportunidadeId: uuid("oportunidade_id")
+      .notNull()
+      .references(() => oportunidades.id, { onDelete: "cascade" }),
+    empresaId: uuid("empresa_id")
+      .notNull()
+      .references(() => empresas.id, { onDelete: "cascade" }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    index("diagnosticos_oportunidade_idx").on(t.oportunidadeId),
+    check("diagnosticos_fit_check", sql`${t.fit} is null or ${t.fit} in ${inList(FIT)}`),
+  ],
+);
+
+// ---------- propostas (proposta comercial ligada a oportunidade) ----------
+export const propostas = pgTable(
+  "propostas",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    plano: text("plano"),
+    valorMensalCents: integer("valor_mensal_cents"),
+    valorSetupCents: integer("valor_setup_cents"),
+    escopo: text("escopo"),
+    status: text("status").notNull().default("rascunho"),
+    dataEnvio: timestamp("data_envio", { withTimezone: true, mode: "date" }),
+    validade: timestamp("validade", { withTimezone: true, mode: "date" }),
+    link: text("link"),
+    oportunidadeId: uuid("oportunidade_id")
+      .notNull()
+      .references(() => oportunidades.id, { onDelete: "cascade" }),
+    empresaId: uuid("empresa_id")
+      .notNull()
+      .references(() => empresas.id, { onDelete: "cascade" }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    index("propostas_status_created_idx").on(t.status, t.createdAt),
+    index("propostas_oportunidade_idx").on(t.oportunidadeId),
+    check("propostas_status_check", sql`${t.status} in ${inList(STATUS_PROPOSTA)}`),
+    check("propostas_plano_check", sql`${t.plano} is null or ${t.plano} in ${inList(PLANO)}`),
+  ],
+);
+
+// ---------- notes (anotacao vinculavel a qualquer registro via targetType+targetId) ----------
+export const notes = pgTable(
+  "notes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    body: text("body").notNull(),
+    targetType: text("target_type").notNull(),
+    targetId: uuid("target_id").notNull(),
+    // Autor da nota. Usuario apagado -> nota mantida (set null).
+    autorId: uuid("autor_id").references(() => users.id, { onDelete: "set null" }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    index("notes_target_idx").on(t.targetType, t.targetId),
+    check("notes_target_type_check", sql`${t.targetType} in ${inList(TARGET_TYPE)}`),
+  ],
+);
+
+// ---------- tasks (to-do vinculavel a qualquer registro) ----------
+export const tasks = pgTable(
+  "tasks",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    title: text("title").notNull(),
+    status: text("status").notNull().default("aberta"),
+    dueAt: timestamp("due_at", { withTimezone: true, mode: "date" }),
+    targetType: text("target_type").notNull(),
+    targetId: uuid("target_id").notNull(),
+    autorId: uuid("autor_id").references(() => users.id, { onDelete: "set null" }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    index("tasks_target_idx").on(t.targetType, t.targetId),
+    index("tasks_status_idx").on(t.status),
+    check("tasks_status_check", sql`${t.status} in ${inList(TASK_STATUS)}`),
+    check("tasks_target_type_check", sql`${t.targetType} in ${inList(TARGET_TYPE)}`),
+  ],
+);
+
+// ---------- audit_log (append-only; alimenta a timeline da record page e o compliance) ----------
+export const auditLog = pgTable(
+  "audit_log",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    // Quem fez a acao. Acao do sistema (ingestao) pode ter actor null.
+    actorId: uuid("actor_id").references(() => users.id, { onDelete: "set null" }),
+    acao: text("acao").notNull(),
+    entidade: text("entidade").notNull(),
+    entidadeId: uuid("entidade_id").notNull(),
+    antes: jsonb("antes"),
+    depois: jsonb("depois"),
+    // Append-only: so existe o instante do evento, nunca updatedAt.
+    at: timestamp("at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+  },
+  (t) => [index("audit_log_entidade_idx").on(t.entidade, t.entidadeId, t.at)],
 );

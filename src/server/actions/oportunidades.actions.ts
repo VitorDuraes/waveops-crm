@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { requireUser } from "@/lib/auth";
 import { parseBRLToCents } from "@/lib/crm/format";
+import { recordAudit } from "@/server/audit";
 import * as repo from "@/server/oportunidades";
 
 export type OportunidadeFormState = { ok: boolean; message: string } | null;
@@ -27,7 +28,7 @@ export async function createOportunidadeAction(
   _prev: OportunidadeFormState,
   formData: FormData,
 ): Promise<OportunidadeFormState> {
-  await requireUser();
+  const user = await requireUser();
 
   const probabilidadeRaw = String(formData.get("probabilidade") ?? "").trim();
   let probabilidade: number | null = null;
@@ -49,6 +50,14 @@ export async function createOportunidadeAction(
     return { ok: false, message: mapCreateError(result.error) };
   }
 
+  await recordAudit(db, {
+    actorId: user.id,
+    acao: "criar",
+    entidade: "oportunidade",
+    entidadeId: result.oportunidade.id,
+    depois: { name: result.oportunidade.name, stage: result.oportunidade.stage },
+  });
+
   revalidatePath("/funil");
   return { ok: true, message: "Oportunidade criada." };
 }
@@ -60,13 +69,28 @@ export async function moveOportunidadeAction(
   id: string,
   toStage: string,
 ): Promise<MoveOportunidadeResult> {
-  await requireUser();
+  const user = await requireUser();
+
+  // Captura o stage anterior para a timeline (antes -> depois).
+  const before = await repo.getOportunidadeById(db, id);
 
   const result = await repo.updateStage(db, id, toStage);
   if (!result.ok) {
     return { ok: false, error: result.error };
   }
 
+  if (before && before.stage !== result.oportunidade.stage) {
+    await recordAudit(db, {
+      actorId: user.id,
+      acao: "mover_estagio",
+      entidade: "oportunidade",
+      entidadeId: id,
+      antes: { stage: before.stage },
+      depois: { stage: result.oportunidade.stage },
+    });
+  }
+
   revalidatePath("/funil");
+  revalidatePath(`/oportunidades/${id}`);
   return { ok: true };
 }

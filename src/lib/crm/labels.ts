@@ -3,13 +3,17 @@
 // Os valores (chaves) espelham os arrays de src/lib/validators e os CHECK do schema.
 // Use estes mapas em qualquer tela ou relatorio que o usuario le (nunca exibir o value cru).
 import type {
+  Fit,
   FormaPagamento,
   MotivoPerda,
   Origem,
+  Plano,
   Role,
   Segmento,
   Stage,
   StatusCliente,
+  StatusProposta,
+  TaskStatus,
 } from "@/lib/validators";
 
 export const ROLE_LABELS: Record<Role, string> = {
@@ -74,4 +78,34 @@ export const MOTIVO_PERDA_LABELS: Record<MotivoPerda, string> = {
   concorrente: "Concorrente",
   timing: "Timing",
   outro: "Outro",
+};
+
+// ========================= Fase 2 (pre-venda + atividades) =========================
+
+export const PLANO_LABELS: Record<Plano, string> = {
+  operacao: "Operação",
+  essencial: "Essencial",
+  pro: "Pro",
+  empresarial: "Empresarial",
+};
+
+export const FIT_LABELS: Record<Fit, string> = {
+  alto: "Alto",
+  medio: "Médio",
+  baixo: "Baixo",
+};
+
+export const STATUS_PROPOSTA_LABELS: Record<StatusProposta, string> = {
+  rascunho: "Rascunho",
+  enviada: "Enviada",
+  aceita: "Aceita",
+  recusada: "Recusada",
+  expirada: "Expirada",
+};
+
+export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
+  aberta: "Aberta",
+  em_andamento: "Em Andamento",
+  concluida: "Concluída",
+  cancelada: "Cancelada",
 };
