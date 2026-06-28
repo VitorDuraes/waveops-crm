@@ -1,0 +1,122 @@
+"use client";
+// src/components/funil/oportunidade-create-form.tsx — nova oportunidade.
+// Padrao do Prospect: useTransition + chamada direta da action (sem useActionState/efeito).
+// Cria sempre em novo_lead (definido no repo). Select das empresas vem do Server Component.
+import { useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { createOportunidadeAction } from "@/server/actions/oportunidades.actions";
+
+export type EmpresaOption = { id: string; name: string };
+
+export function OportunidadeCreateForm({ empresas }: { empresas: EmpresaOption[] }) {
+  const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
+  const [open, setOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const noEmpresas = empresas.length === 0;
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    const formData = new FormData(e.currentTarget);
+
+    startTransition(async () => {
+      const result = await createOportunidadeAction(null, formData);
+      if (result?.ok) {
+        formRef.current?.reset();
+        setOpen(false);
+        router.refresh();
+      } else {
+        setError(result?.message ?? "Não foi possível criar a oportunidade.");
+      }
+    });
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      <button
+        type="button"
+        onClick={() => {
+          setOpen((v) => !v);
+          setError(null);
+        }}
+        disabled={noEmpresas}
+        title={noEmpresas ? "Cadastre uma empresa antes de criar uma oportunidade." : undefined}
+        className="w-fit rounded-lg bg-[var(--color-brand)] px-3 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {open ? "Cancelar" : "Nova oportunidade"}
+      </button>
+
+      {noEmpresas ? (
+        <p className="text-xs text-neutral-500">Cadastre uma empresa antes de criar uma oportunidade.</p>
+      ) : null}
+
+      {open ? (
+        <section className="rounded-xl border border-neutral-200 bg-white p-4">
+          <h3 className="mb-4 text-base font-semibold text-neutral-900">Nova oportunidade</h3>
+          <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Nome *">
+                <input name="name" type="text" required placeholder="Ex: Assinatura mensal" className={inputCls} />
+              </Field>
+              <Field label="Empresa *">
+                <select name="empresaId" required defaultValue="" className={inputCls}>
+                  <option value="" disabled>
+                    Selecione...
+                  </option>
+                  {empresas.map((e) => (
+                    <option key={e.id} value={e.id}>
+                      {e.name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Plano pretendido">
+                <input name="planoPretendido" type="text" placeholder="Ex: Pro" className={inputCls} />
+              </Field>
+              <Field label="Valor mensal estimado">
+                <input name="valorMensalEstimado" type="text" placeholder="R$ 1.500,00" className={inputCls} />
+              </Field>
+              <Field label="Probabilidade (%)">
+                <input
+                  name="probabilidade"
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={1}
+                  placeholder="50"
+                  className={inputCls}
+                />
+              </Field>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                type="submit"
+                disabled={isPending}
+                className="rounded-lg bg-[var(--color-brand)] px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isPending ? "Salvando..." : "Criar oportunidade"}
+              </button>
+              {error ? <p className="text-sm text-rose-700">{error}</p> : null}
+            </div>
+          </form>
+        </section>
+      ) : null}
+    </div>
+  );
+}
+
+const inputCls =
+  "w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-[var(--color-brand)] focus:ring-2 focus:ring-violet-100";
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="flex flex-col gap-1 text-sm font-medium text-neutral-700">
+      {label}
+      {children}
+    </label>
+  );
+}

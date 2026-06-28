@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+/*
+ * WaveOps CRM: shell basico. O design system completo (tokens, dark mode, motion)
+ * entra junto com o Kanban nas proximas fases. Por ora, so o minimo: fontes e marca violeta.
+ */
+
+@theme {
+  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-space-grotesk), var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-space-mono), ui-monospace, "SFMono-Regular", "Menlo", monospace;
+
+  /* Marca / acao: violeta WaveOps. */
+  --color-brand: #7c3aed;
+  --color-brand-soft: #f5f3ff;
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: #f6f6f8;
+  color: #1f2430;
+}

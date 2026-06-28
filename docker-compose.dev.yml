@@ -1,0 +1,34 @@
+# docker-compose.dev.yml — APENAS o Postgres para desenvolvimento local.
+# A app Next.js roda fora do Docker em dev (npm run dev), para ter hot reload.
+# Suba o banco com:  docker compose -f docker-compose.dev.yml up -d
+# Pare com:          docker compose -f docker-compose.dev.yml down
+# Apague o volume:   docker compose -f docker-compose.dev.yml down -v
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: waveops_crm_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-waveops}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-waveops_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-waveops_crm}
+      # Timezone do container. Datas de negocio sao calculadas na app em America/Sao_Paulo.
+      TZ: America/Sao_Paulo
+    ports:
+      # Expoe na maquina para a app local (npm run dev) e o drizzle-kit conectarem.
+      # Host na 5434 para nao colidir com o WaveOps Prospect (5433). Configuravel via POSTGRES_PORT.
+      - "${POSTGRES_PORT:-5434}:5432"
+    volumes:
+      - waveops_crm_pgdata_dev:/var/lib/postgresql/data
+    healthcheck:
+      # pg_isready confirma que o Postgres aceita conexoes antes de migrar/usar.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-waveops} -d ${POSTGRES_DB:-waveops_crm}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  waveops_crm_pgdata_dev:
+    name: waveops_crm_pgdata_dev
