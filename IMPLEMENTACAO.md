@@ -48,6 +48,7 @@ Migrations versionadas: `0000` a `0004`. Aplicam sozinhas no deploy (`scripts/mi
 
 ## Pendente do dono (precisa de credencial/acesso)
 
-- **Seed do admin no Railway**: rodar o seed no banco de producao para criar o admin + 4 planos.
+- ~~**Seed do admin no Railway**~~: FEITO em 2026-06-28. Admin `vitor@waveops.com.br` + 4 planos
+  no banco de producao (rodado da maquina do dono via `DIRECT_URL` = `DATABASE_PUBLIC_URL`).
 - **Repoint do Prospect**: apontar o adapter do Prospect para `POST /api/ingest/lead` deste CRM
   (troca de URL/token). Nao alterado aqui por estar em edicao no outro repo.

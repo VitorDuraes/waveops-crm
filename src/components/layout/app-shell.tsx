@@ -27,10 +27,7 @@ export function AppShell({ user, children }: { user: ShellUser; children: React.
       {/* Sidebar */}
       <aside className="flex w-60 flex-none flex-col border-r border-neutral-200 bg-white">
         <div className="flex h-16 flex-none items-center gap-2.5 border-b border-neutral-200 px-5">
-          <span
-            className="flex h-8 w-8 items-center justify-center rounded-xl text-sm font-bold text-white shadow-sm"
-            style={{ background: "var(--color-brand)" }}
-          >
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-linear-to-br from-brand to-indigo-600 text-sm font-bold text-white shadow-sm shadow-violet-200">
             W
           </span>
           <span className="font-display text-base font-semibold tracking-tight text-neutral-900">
@@ -46,9 +43,9 @@ export function AppShell({ user, children }: { user: ShellUser; children: React.
                 key={item.key}
                 href={item.href}
                 aria-current={on ? "page" : undefined}
-                className={`rounded-xl px-3 py-2.5 text-sm transition-colors ${
+                className={`rounded-xl px-3 py-2.5 text-sm transition-all ${
                   on
-                    ? "bg-violet-50 font-semibold text-[var(--color-brand)]"
+                    ? "bg-linear-to-r from-brand to-indigo-600 font-semibold text-white shadow-md shadow-violet-500/20"
                     : "font-medium text-neutral-600 hover:bg-neutral-100"
                 }`}
               >
@@ -61,10 +58,7 @@ export function AppShell({ user, children }: { user: ShellUser; children: React.
         {/* Usuario + papel + logout */}
         <div className="flex-none border-t border-neutral-200 p-3">
           <div className="flex items-center gap-2.5 rounded-xl px-2 py-1.5">
-            <span
-              className="flex h-9 w-9 flex-none items-center justify-center rounded-full text-xs font-semibold text-white shadow-sm"
-              style={{ background: "var(--color-brand)" }}
-            >
+            <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-linear-to-br from-brand to-indigo-600 text-xs font-semibold text-white shadow-sm shadow-violet-200">
               {initialsOf(user.name)}
             </span>
             <div className="flex min-w-0 flex-col leading-tight">

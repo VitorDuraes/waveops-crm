@@ -10,9 +10,20 @@
   --font-display: var(--font-space-grotesk), var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-space-mono), ui-monospace, "SFMono-Regular", "Menlo", monospace;
 
-  /* Marca / acao: violeta WaveOps. */
+  /* Marca / acao: violeta WaveOps + acento ciano para gradientes. */
   --color-brand: #7c3aed;
+  --color-brand-2: #22d3ee;
   --color-brand-soft: #f5f3ff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }
 
 :root {

@@ -1,15 +1,19 @@
 // src/app/(app)/dashboards/page.tsx — Dashboards de receita, funil, perdas e cobranca (Server Component).
 // Busca em runtime via getDashboard(db). Calculo nas funcoes puras de @/lib/crm/metrics.
+// UI: StatCard com numero animado (CountUp/ReactBits) + GradientText no titulo.
 import { db } from "@/db";
 import { requireUser } from "@/lib/auth";
 import { getDashboard } from "@/server/metrics";
 import { StatCard } from "@/components/dashboards/stat-card";
 import { BarList } from "@/components/dashboards/bar-list";
+import GradientText from "@/components/ui/reactbits/GradientText";
 import { MOTIVO_PERDA_LABELS, STAGE_LABELS } from "@/lib/crm/labels";
-import { formatBRLFromCents } from "@/lib/crm/format";
 import type { MotivoPerda, Stage } from "@/lib/validators";
 
 export const dynamic = "force-dynamic";
+
+// Stops violeta -> indigo: legiveis sobre o fundo claro do app (ciano reprovaria contraste).
+const BRAND_GRADIENT = ["#7c3aed", "#4f46e5", "#7c3aed"];
 
 export default async function DashboardsPage() {
   await requireUser();
@@ -30,19 +34,29 @@ export default async function DashboardsPage() {
   return (
     <div className="flex w-full flex-col gap-8">
       <header className="border-b border-neutral-200 pb-6">
-        <h2 className="text-2xl font-semibold text-neutral-900">Dashboards</h2>
-        <p className="mt-1 text-sm text-neutral-500">Receita, funil, perdas e cobranca em tempo real.</p>
+        <div className="w-fit">
+          <GradientText
+            colors={BRAND_GRADIENT}
+            animationSpeed={10}
+            className="text-2xl font-semibold tracking-tight"
+          >
+            Dashboards
+          </GradientText>
+        </div>
+        <p className="mt-1 text-sm text-neutral-500">
+          Receita, funil, perdas e cobrança em tempo real.
+        </p>
       </header>
 
       <section className="flex flex-col gap-3">
         <h3 className="text-base font-semibold text-neutral-900">Receita</h3>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <StatCard label="MRR" value={formatBRLFromCents(d.mrrCents)} hint="Receita recorrente mensal" />
-          <StatCard label="ARR" value={formatBRLFromCents(d.arrCents)} hint="Receita recorrente anual" />
-          <StatCard label="Assinaturas ativas" value={String(d.ativas)} />
-          <StatCard label="Churn" value={`${d.churnPercent}%`} hint="No mes" />
-          <StatCard label="Novas no mes" value={String(d.novasNoMes)} />
-          <StatCard label="Canceladas no mes" value={String(d.canceladasNoMes)} />
+          <StatCard label="MRR" value={d.mrrCents} format="money" hint="Receita recorrente mensal" accent />
+          <StatCard label="ARR" value={d.arrCents} format="money" hint="Receita recorrente anual" accent />
+          <StatCard label="Assinaturas ativas" value={d.ativas} format="int" />
+          <StatCard label="Churn" value={d.churnPercent} format="percent" hint="No mês" />
+          <StatCard label="Novas no mês" value={d.novasNoMes} format="int" />
+          <StatCard label="Canceladas no mês" value={d.canceladasNoMes} format="int" />
         </div>
       </section>
 
@@ -53,14 +67,15 @@ export default async function DashboardsPage() {
             <BarList items={funilItems} />
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
-            <StatCard label="Win rate" value={`${d.winRatePercent}%`} hint="Ganhos sobre fechados" />
-            <StatCard label="Pipeline aberto" value={formatBRLFromCents(d.pipelineAbertoCents)} />
-            <StatCard label="Pipeline ponderado" value={formatBRLFromCents(d.pipelinePonderadoCents)} hint="Por probabilidade" />
+            <StatCard label="Win rate" value={d.winRatePercent} format="percent" hint="Ganhos sobre fechados" />
+            <StatCard label="Pipeline aberto" value={d.pipelineAbertoCents} format="money" />
             <StatCard
-              label="Ciclo medio"
-              value={d.cicloMedioDias != null ? `${d.cicloMedioDias} dias` : "-"}
-              hint="Lead ate ganho"
+              label="Pipeline ponderado"
+              value={d.pipelinePonderadoCents}
+              format="money"
+              hint="Por probabilidade"
             />
+            <StatCard label="Ciclo médio" value={d.cicloMedioDias} format="days" hint="Lead até ganho" />
           </div>
         </div>
       </section>
@@ -73,21 +88,24 @@ export default async function DashboardsPage() {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h3 className="text-base font-semibold text-neutral-900">Cobranca</h3>
+        <h3 className="text-base font-semibold text-neutral-900">Cobrança</h3>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <StatCard
             label="Vencidas"
-            value={formatBRLFromCents(d.vencidas.totalCents)}
+            value={d.vencidas.totalCents}
+            format="money"
             hint={`${d.vencidas.count} ${d.vencidas.count === 1 ? "fatura" : "faturas"}`}
           />
           <StatCard
-            label="Proximos 7 dias"
-            value={formatBRLFromCents(d.proximos7.totalCents)}
+            label="Próximos 7 dias"
+            value={d.proximos7.totalCents}
+            format="money"
             hint={`${d.proximos7.count} ${d.proximos7.count === 1 ? "fatura" : "faturas"}`}
           />
           <StatCard
-            label="Recebido no mes"
-            value={formatBRLFromCents(d.recebidoNoMes.totalCents)}
+            label="Recebido no mês"
+            value={d.recebidoNoMes.totalCents}
+            format="money"
             hint={`${d.recebidoNoMes.count} ${d.recebidoNoMes.count === 1 ? "fatura" : "faturas"}`}
           />
         </div>
